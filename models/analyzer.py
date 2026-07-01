@@ -7,11 +7,9 @@ def get_reasons(odds):
 
     if odds < 0:
         reasons.append("Sportsbook has this team as the favorite")
-    if odds <= -200:
-        reasons.append("Heavy favorite, but lower value")
-    if odds > 120:
+    elif odds > 120:
         reasons.append("Underdog value detected")
-    if not reasons:
+    else:
         reasons.append("Balanced betting line")
 
     return reasons
@@ -22,36 +20,49 @@ def analyze_games(games):
     print("🔥 LUX PARLAY AI TOP 5 PLAYS")
     print("========================================\n")
 
-    if not games:
-        print("No games to analyze.")
-        return
+    print(f"Games found: {len(games)}\n")
 
     plays = []
 
     for game in games:
+        teams = []
+
         try:
-            bookmaker = game["bookmakers"][0]
-            market = bookmaker["markets"][0]
-            outcomes = market["outcomes"]
+            bookmaker = game.get("bookmakers", [])[0]
+            market = bookmaker.get("markets", [])[0]
+            outcomes = market.get("outcomes", [])
 
             for outcome in outcomes:
-                team = outcome["name"]
-                odds = outcome["price"]
-                stats = get_team_stats(team)
-                confidence = calculate_confidence(stats, odds)
-                reasons = get_reasons(odds)
-
-                plays.append({
-                    "team": team,
-                    "odds": odds,
-                    "confidence": confidence,
-                    "reasons": reasons,
-                    "stats": stats,
-                    "stars": "★★★★★" if confidence >= 90 else "★★★★" if confidence >= 80 else "★★★"
+                teams.append({
+                    "team": outcome["name"],
+                    "odds": outcome["price"]
                 })
 
-        except Exception:
-            continue
+        except:
+            teams.append({"team": game.get("home_team"), "odds": 0})
+            teams.append({"team": game.get("away_team"), "odds": 0})
+
+        for item in teams:
+            team = item["team"]
+            odds = item["odds"]
+
+            if not team:
+                continue
+
+            stats = get_team_stats(team)
+            confidence = calculate_confidence(stats, odds)
+            reasons = get_reasons(odds)
+
+            plays.append({
+                "team": team,
+                "odds": odds,
+                "confidence": confidence,
+                "reasons": reasons,
+                "stats": stats,
+                "stars": "★★★★★" if confidence >= 90 else "★★★★" if confidence >= 80 else "★★★"
+            })
+
+    print(f"Plays found: {len(plays)}\n")
 
     plays = sorted(plays, key=lambda x: x["confidence"], reverse=True)
 
