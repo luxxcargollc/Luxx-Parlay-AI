@@ -14,7 +14,7 @@ def get_odds():
     params = {
         "apiKey": api_key,
         "regions": "us",
-        "markets": "h2h",
+"markets": "h2h,spreads,totals",
         "oddsFormat": "american"
     }
 
