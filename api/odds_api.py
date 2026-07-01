@@ -9,16 +9,12 @@ def get_odds():
 
     api_key = os.getenv("ODDS_API_KEY")
 
-    if not api_key:
-        print("Missing API key. Check your .env file.")
-        return
-
     url = "https://api.the-odds-api.com/v4/sports/baseball_mlb/odds"
 
     params = {
         "apiKey": api_key,
         "regions": "us",
-        "markets": "h2h,totals",
+        "markets": "h2h",
         "oddsFormat": "american"
     }
 
@@ -27,7 +23,7 @@ def get_odds():
     if response.status_code != 200:
         print("Odds API Error")
         print(response.text)
-        return
+        return []
 
     games = response.json()
 
@@ -35,3 +31,5 @@ def get_odds():
 
     for game in games[:5]:
         print(game["away_team"], "@", game["home_team"])
+
+    return games
