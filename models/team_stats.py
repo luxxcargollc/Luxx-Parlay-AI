@@ -33,9 +33,9 @@ def get_team_stats(team):
                     "team": team,
                     "wins": t["wins"],
                     "losses": t["losses"],
-                    "last10": "Coming Soon",
-                    "home_record": "Coming Soon",
-                    "away_record": "Coming Soon"
+"last10": f'{t["records"]["splitRecords"][8]["wins"]}-{t["records"]["splitRecords"][8]["losses"]}',
+"home_record": f'{t["records"]["splitRecords"][0]["wins"]}-{t["records"]["splitRecords"][0]["losses"]}',
+"away_record": f'{t["records"]["splitRecords"][1]["wins"]}-{t["records"]["splitRecords"][1]["losses"]}',
                 }
 
     except Exception as e:

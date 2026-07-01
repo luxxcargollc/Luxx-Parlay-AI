@@ -1,5 +1,5 @@
-from models.ai_engine import score_game
 from models.team_stats import get_team_stats
+from models.predictor import calculate_confidence
 
 def get_reasons(odds):
     reasons = []
@@ -35,34 +35,33 @@ def analyze_games(games):
                 team = outcome["name"]
                 odds = outcome["price"]
                 stats = get_team_stats(team)
-
-                score, stars = score_game(team, odds)
+                confidence = calculate_confidence(stats, odds)
                 reasons = get_reasons(odds)
 
                 plays.append({
                     "team": team,
                     "odds": odds,
-                    "score": score,
-                    "stars": stars,
+                    "confidence": confidence,
                     "reasons": reasons,
-                    "stats": stats
+                    "stats": stats,
+                    "stars": "★★★★★" if confidence >= 90 else "★★★★" if confidence >= 80 else "★★★"
                 })
 
         except:
             continue
 
-    plays = sorted(plays, key=lambda x: x["score"], reverse=True)
+    plays = sorted(plays, key=lambda x: x["confidence"], reverse=True)
 
     for play in plays[:5]:
         stats = play["stats"]
 
         print(f'{play["stars"]} {play["team"]}')
         print(f'Odds: {play["odds"]}')
-        print(f"Record: {stats['wins']}-{stats['losses']}")
-        print(f"Last 10: {stats['last10']}")
-        print(f"Home: {stats['home_record']}")
-        print(f"Away: {stats['away_record']}")
-        print(f'Confidence: {play["score"]}%')
+        print(f'Record: {stats["wins"]}-{stats["losses"]}')
+        print(f'Last 10: {stats["last10"]}')
+        print(f'Home: {stats["home_record"]}')
+        print(f'Away: {stats["away_record"]}')
+        print(f'Confidence: {play["confidence"]}%')
         print("Reasons:")
 
         for reason in play["reasons"]:
