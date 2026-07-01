@@ -1,6 +1,7 @@
 from models.team_stats import get_team_stats
 from models.predictor import calculate_confidence
 
+
 def get_reasons(odds):
     reasons = []
 
@@ -17,7 +18,9 @@ def get_reasons(odds):
 
 
 def analyze_games(games):
-    print("\nTOP 5 PLAYS OF THE DAY\n")
+    print("\n========================================")
+    print("🔥 LUX PARLAY AI TOP 5 PLAYS")
+    print("========================================\n")
 
     if not games:
         print("No games to analyze.")
@@ -47,15 +50,17 @@ def analyze_games(games):
                     "stars": "★★★★★" if confidence >= 90 else "★★★★" if confidence >= 80 else "★★★"
                 })
 
-        except:
+        except Exception:
             continue
 
     plays = sorted(plays, key=lambda x: x["confidence"], reverse=True)
 
-    for play in plays[:5]:
+    for index, play in enumerate(plays[:5], start=1):
         stats = play["stats"]
 
-        print(f'{play["stars"]} {play["team"]}')
+        print("=" * 40)
+        print(f'{play["stars"]} #{index} {play["team"]}')
+        print("=" * 40)
         print(f'Odds: {play["odds"]}')
         print(f'Record: {stats["wins"]}-{stats["losses"]}')
         print(f'Last 10: {stats["last10"]}')
