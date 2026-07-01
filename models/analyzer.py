@@ -3,56 +3,41 @@ from models.predictor import calculate_confidence
 from models.pitchers import get_pitcher_advantage
 
 
-def get_reasons(odds):
-    reasons = []
-
+def implied_probability(odds):
     if odds < 0:
-        reasons.append("Sportsbook has this team as the favorite")
-    elif odds > 120:
-        reasons.append("Underdog value detected")
-    else:
-        reasons.append("Balanced betting line")
+        return round((-odds / (-odds + 100)) * 100, 1)
+    return round((100 / (odds + 100)) * 100, 1)
 
-    return reasons
+
+def get_reasons(odds):
+    if odds < 0:
+        return ["Sportsbook has this team as the favorite"]
+    if odds > 120:
+        return ["Underdog value detected"]
+    return ["Balanced betting line"]
 
 
 def analyze_games(games):
     print("\n========================================")
     print("🔥 LUX PARLAY AI TOP 5 PLAYS")
     print("========================================\n")
-
     print(f"Games found: {len(games)}\n")
 
     plays = []
 
     for game in games:
-        teams = []
-        pitcher = get_pitcher_advantage(
-            game.get("home_team"),
-            game.get("away_team")
-        )
+        pitcher = get_pitcher_advantage(game.get("home_team"), game.get("away_team"))
 
         try:
             bookmaker = game.get("bookmakers", [])[0]
             market = bookmaker.get("markets", [])[0]
             outcomes = market.get("outcomes", [])
-
-            for outcome in outcomes:
-                teams.append({
-                    "team": outcome["name"],
-                    "odds": outcome["price"]
-                })
-
         except:
-            teams.append({"team": game.get("home_team"), "odds": 0})
-            teams.append({"team": game.get("away_team"), "odds": 0})
+            outcomes = []
 
-        for item in teams:
-            team = item["team"]
-            odds = item["odds"]
-
-            if not team:
-                continue
+        for outcome in outcomes:
+            team = outcome["name"]
+            odds = outcome["price"]
 
             stats = get_team_stats(team)
             confidence = calculate_confidence(stats, odds)
@@ -84,13 +69,21 @@ def analyze_games(games):
         print(f'{play["stars"]} #{index} {play["team"]}')
         print("=" * 40)
         print(f'Odds: {play["odds"]}')
+        print(f'Implied Probability: {implied_probability(play["odds"])}%')
         print(f'Record: {stats["wins"]}-{stats["losses"]}')
         print(f'Last 10: {stats["last10"]}')
         print(f'Home: {stats["home_record"]}')
         print(f'Away: {stats["away_record"]}')
         print(f'Confidence: {play["confidence"]}%')
-        print("Reasons:")
 
+        if play["confidence"] >= 90:
+            print("Recommendation: ⭐ STRONG BET")
+        elif play["confidence"] >= 80:
+            print("Recommendation: ✅ LEAN")
+        else:
+            print("Recommendation: ⚠️ PASS")
+
+        print("Reasons:")
         for reason in play["reasons"]:
             print(f"- {reason}")
 
