@@ -1,5 +1,6 @@
 from models.team_stats import get_team_stats
 from models.predictor import calculate_confidence
+from models.pitchers import get_pitcher_advantage
 
 
 def get_reasons(odds):
@@ -26,6 +27,10 @@ def analyze_games(games):
 
     for game in games:
         teams = []
+        pitcher = get_pitcher_advantage(
+            game.get("home_team"),
+            game.get("away_team")
+        )
 
         try:
             bookmaker = game.get("bookmakers", [])[0]
@@ -52,6 +57,12 @@ def analyze_games(games):
             stats = get_team_stats(team)
             confidence = calculate_confidence(stats, odds)
             reasons = get_reasons(odds)
+
+            if pitcher["advantage"] == team:
+                confidence += pitcher["score"]
+                reasons.append("Pitcher advantage added")
+
+            confidence = min(confidence, 99)
 
             plays.append({
                 "team": team,
